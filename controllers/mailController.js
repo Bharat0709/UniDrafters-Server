@@ -1,10 +1,7 @@
-//We're using the express framework and the mailgun-js wrapper
 const dotenv = require('dotenv');
 dotenv.config();
 dotenv.config({ path: './.env' });
 const Mailgun = require('mailgun-js');
-
-const pdfkit = require('pdfkit');
 
 const api_key = process.env.MAILGUN_API_KEY;
 
@@ -844,27 +841,6 @@ exports.sendMailtoBuyer = async (req, res) => {
 exports.sendMailtoSeller = async (req, res) => {
   const buyerInfo = req.body;
 
-  // Create a new PDF document
-  const doc = new pdfkit();
-  // Pipe the PDF document to a buffer
-  const pdfBuffer = await new Promise((resolve, reject) => {
-    const buffers = [];
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => {
-      resolve(Buffer.concat(buffers));
-    });
-    // Add content to the PDF
-    doc.text(`Order Details:\n\n`);
-    doc.text(`Name: ${buyerInfo.name}\n`);
-    doc.text(`Email: ${buyerInfo.email}\n`);
-    doc.text(`Mobile Number: ${buyerInfo.mobileNumber}\n`);
-    doc.text(`College Name: ${buyerInfo.collegeName}\n`);
-    doc.text(`College Year: ${buyerInfo.collegeYear}\n`);
-    doc.text(`College Branch: ${buyerInfo.collegeBranch}\n`);
-    // End the document
-    doc.end();
-  });
-
   var mailgun = new Mailgun({ apiKey: api_key, domain: domain });
   var data = {
     from: from_who,
@@ -937,12 +913,6 @@ exports.sendMailtoSeller = async (req, res) => {
     </body>
     </html>
     `,
-    // Attach the PDF buffer as a file
-    attachment: {
-      data: pdfBuffer,
-      filename: 'order_details.pdf',
-      contentType: 'application/pdf', // Set content type explicitly
-    },
   };
 
   // Invokes the method to send emails given the above data with the helper library
